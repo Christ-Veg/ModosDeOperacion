@@ -10,8 +10,8 @@ import javax.imageio.ImageIO;
 
 public class ModosDeOperacion {
     public static void main(String[] args) throws IOException {
-        String thunder="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\Practica2\\thundercats.bmp", 
-                paisaje="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\Practica2\\paisaje.bmp",
+        String thunder="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\thundercats.bmp", 
+                paisaje="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\paisaje.bmp",
                 texto="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\Practica2\\thunder.txt";
         BufferedImage img=ImageIO.read(new File(thunder));
         FileWriter arc= new FileWriter(texto);
