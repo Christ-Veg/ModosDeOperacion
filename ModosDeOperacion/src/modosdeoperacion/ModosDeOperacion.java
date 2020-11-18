@@ -16,41 +16,45 @@ public class ModosDeOperacion {
         BufferedImage img=ImageIO.read(new File(thunder));
         FileWriter arc= new FileWriter(texto);
         PrintWriter pw=new PrintWriter(arc);
-        BufferedImage ecba=new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-        for(int i=0;i<img.getWidth();i++){
-            for(int j=0;j<img.getHeight();j++){
-                int rgb=img.getRGB(i,j);
-                Color color=new Color(rgb,true);
-                int r=color.getRed();
-                int g=color.getGreen();
-                int b=color.getBlue();
-                pw.print("["+r+","+g+","+b+"]");
-                ecb(r,g,b);
-                cbc(r,g,b);
-                cfb(r,g,b);
-                ofb(r,g,b);
-                Color nuevo=new Color(((r*3)%256),((g*3)%256),((b*3)%256));
-                ecba.setRGB(i, j, nuevo.getRGB());
-            }
-            pw.print("\n");
-        }
-        ImageIO.write(ecba, "bmp", new File("prueba.bmp"));
-        pw.close();
+        
+        //for(int i=0;i<img.getWidth();i++){//EStos ciclos deben ir dentro de los metodos de cada modo.
+            //for(int j=0;j<img.getHeight();j++){//Se inician los ciclos para recorrer la imagen pixel por pixel
+                ecb(img,pw);//Metodo que nos lleva a el modo de operacion respectivo
+                cbc(img);//Metodo que nos lleva a el modo de operacion respectivo
+                cfb(img);//Metodo que nos lleva a el modo de operacion respectivo
+                ofb(img);//Metodo que nos lleva a el modo de operacion respectivo
+            //}
+            pw.print("\n");//Salto de linea para separar por linea el ancho de la imagen
+        //}
+        pw.close();//Se cierra el editor del txt
     }    
 
-    private static void ecb(int r, int g, int b) {
+    private static void ecb(BufferedImage img, PrintWriter pw) throws IOException {
+        BufferedImage ecba=new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);//Se crea una imagen del tamaño de la original
+        for(int i=0;i<img.getWidth();i++){
+            for(int j=0;j<img.getHeight();j++){//Se inician los ciclos para recorrer la imagen pixel por pixel
+                int rgb=img.getRGB(i,j);//Se  obtiene el codigo RGB del pixel actual
+                Color color=new Color(rgb,true);//Se crea objeto para descomponer RGB del pixel en el que nos encontramos
+                int r=color.getRed();//Se guarda en una var independiente cada color
+                int g=color.getGreen();
+                int b=color.getBlue();
+                
+                pw.print("["+r+","+g+","+b+"]");//Se experimenta enviar de esta forma el codigo rgb a un txt, lo mas probable es que se borre
+                Color nuevo=new Color(100,80,170);//Se le asigna color cifrado a la nueva imagen
+                ecba.setRGB(i, j, nuevo.getRGB());//Se le envia el color a la posicion correspondiente
+            }}
+        ImageIO.write(ecba, "bmp", new File("prueba2.bmp"));//Finalmente se crea la imagen ya completamente cifrada
+    }
+
+    private static void cbc(BufferedImage img) {
         
     }
 
-    private static void cbc(int r, int g, int b) {
+    private static void cfb(BufferedImage img) {
         
     }
 
-    private static void cfb(int r, int g, int b) {
-        
-    }
-
-    private static void ofb(int r, int g, int b) {
+    private static void ofb(BufferedImage img) {
         
     }
 }
