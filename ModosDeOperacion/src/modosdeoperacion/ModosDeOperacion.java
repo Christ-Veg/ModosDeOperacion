@@ -11,21 +11,16 @@ import javax.imageio.ImageIO;
 public class ModosDeOperacion {
     public static void main(String[] args) throws IOException {
         String thunder="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\thundercats.bmp", 
-                paisaje="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\paisaje.bmp",
-                texto="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\Practica2\\thunder.txt";
+            paisaje="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\paisaje.bmp",
+            texto="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\Practica2\\thunder.txt";
         BufferedImage img=ImageIO.read(new File(thunder));
         FileWriter arc= new FileWriter(texto);
-        PrintWriter pw=new PrintWriter(arc);
-        
-        //for(int i=0;i<img.getWidth();i++){//EStos ciclos deben ir dentro de los metodos de cada modo.
-            //for(int j=0;j<img.getHeight();j++){//Se inician los ciclos para recorrer la imagen pixel por pixel
-                ecb(img,pw);//Metodo que nos lleva a el modo de operacion respectivo
-                cbc(img);//Metodo que nos lleva a el modo de operacion respectivo
-                cfb(img);//Metodo que nos lleva a el modo de operacion respectivo
-                ofb(img);//Metodo que nos lleva a el modo de operacion respectivo
-            //}
-            pw.print("\n");//Salto de linea para separar por linea el ancho de la imagen
-        //}
+        PrintWriter pw=new PrintWriter(arc);        
+        ecb(img,pw);//Metodo que nos lleva a el modo de operacion respectivo
+        cbc(img);//Metodo que nos lleva a el modo de operacion respectivo
+        cfb(img);//Metodo que nos lleva a el modo de operacion respectivo
+        ofb(img);//Metodo que nos lleva a el modo de operacion respectivo
+        pw.print("\n");//Salto de linea para separar por linea el ancho de la imagen
         pw.close();//Se cierra el editor del txt
     }    
 
