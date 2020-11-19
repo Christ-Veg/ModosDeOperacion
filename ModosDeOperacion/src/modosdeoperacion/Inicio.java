@@ -23,7 +23,7 @@ public class Inicio extends javax.swing.JFrame {
      */
     
     Boolean imagencargada = false; //Bandera para saber si ya se cargo una imagen
-    String rutaimagen = "";
+    String rutaimagen = "";//Ruta de la imagen
     int cECB=0, cCBC=0, cCFB=0, cOFB=0;
     int dECB=0, dCBC=0, dCFB=0, dOFB=0; 
     
