@@ -1,55 +1,131 @@
 package modosdeoperacion;
 
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.imageio.ImageIO;
 
 public class ModosDeOperacion {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeyException, InvalidKeySpecException, InvalidKeySpecException, IllegalBlockSizeException, IllegalBlockSizeException, BadPaddingException, Base64DecodingException {
         String thunder="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\thundercats.bmp", 
-            paisaje="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\paisaje.bmp",
-            texto="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\Practica2\\thunder.txt";
+            paisaje="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\paisaje.bmp";
+        
         BufferedImage img=ImageIO.read(new File(thunder));
-        FileWriter arc= new FileWriter(texto);
-        PrintWriter pw=new PrintWriter(arc);        
-        ecb(img,pw);//Metodo que nos lleva a el modo de operacion respectivo
-        cbc(img);//Metodo que nos lleva a el modo de operacion respectivo
-        cfb(img);//Metodo que nos lleva a el modo de operacion respectivo
-        ofb(img);//Metodo que nos lleva a el modo de operacion respectivo
-        pw.print("\n");//Salto de linea para separar por linea el ancho de la imagen
-        pw.close();//Se cierra el editor del txt
+        ecb(img);//Metodo que nos lleva a el modo de operacion respectivo
+        decb(img);
+        //cbc(img);//Metodo que nos lleva a el modo de operacion respectivo
+        //cfb(img);//Metodo que nos lleva a el modo de operacion respectivo
+        //ofb(img);//Metodo que nos lleva a el modo de operacion respectivo
+        Ek obj=new Ek();
+        obj.cifrado();
     }    
 
-    private static void ecb(BufferedImage img, PrintWriter pw) throws IOException {
-        BufferedImage ecba=new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);//Se crea una imagen del tamaño de la original
-        for(int i=0;i<img.getWidth();i++){
-            for(int j=0;j<img.getHeight();j++){//Se inician los ciclos para recorrer la imagen pixel por pixel
-                int rgb=img.getRGB(i,j);//Se  obtiene el codigo RGB del pixel actual
-                Color color=new Color(rgb,true);//Se crea objeto para descomponer RGB del pixel en el que nos encontramos
-                int r=color.getRed();//Se guarda en una var independiente cada color
-                int g=color.getGreen();
-                int b=color.getBlue();
-                
-                pw.print("["+r+","+g+","+b+"]");//Se experimenta enviar de esta forma el codigo rgb a un txt, lo mas probable es que se borre
-                Color nuevo=new Color(100,80,170);//Se le asigna color cifrado a la nueva imagen
-                ecba.setRGB(i, j, nuevo.getRGB());//Se le envia el color a la posicion correspondiente
-            }}
-        ImageIO.write(ecba, "bmp", new File("prueba2.bmp"));//Finalmente se crea la imagen ya completamente cifrada
+    private static void ecb(BufferedImage im) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, Base64DecodingException {
+        String contraseña="uncifrado";
+        ByteArrayOutputStream bos =new ByteArrayOutputStream();
+        ImageIO.write(im, "bmp", bos);
+        bos.flush();
+        String base64=Base64.encode(bos.toByteArray());
+        bos.close();
+        byte[] text=base64.getBytes();
+        byte[] k=contraseña.getBytes();
+        byte[] m =new byte[(text.length)-53];
+        for(int i=54,j=0;i<text.length;i++,j++){
+            m[j]=text[i];
+        }
+       
+        KeySpec ks=new DESKeySpec(k);
+        SecretKeyFactory kf=SecretKeyFactory.getInstance("DES");
+        SecretKey ky=kf.generateSecret(ks);
+        Cipher ecb= Cipher.getInstance("DES/ECB/PKCS5Padding");
+        ecb.init(Cipher.ENCRYPT_MODE,ky);
+        byte [] cifra=ecb.doFinal(m);
+        
+        byte [] imagen=new byte[cifra.length+54];
+        text=Base64.decode(base64);
+        for(int i=0,j=0;i<imagen.length;i++)
+            if(i<54)
+                imagen[i]=text[i];
+            else{
+                imagen[i]=cifra[j];
+                j++;
+            }
+        System.out.println(text.length+"    "+cifra.length);
+        
+        
+        BufferedImage imag=ImageIO.read(new ByteArrayInputStream(imagen));
+        ImageIO.write(imag,"bmp",new File("Prueba.bmp"));
+        }
+    
+    private static void decb(BufferedImage im) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, Base64DecodingException, BadPaddingException, BadPaddingException, BadPaddingException {
+        String contraseña="uncifrado";
+        ByteArrayOutputStream bos =new ByteArrayOutputStream();
+        ImageIO.write(im,"bmp", bos);
+        bos.flush();
+        String base64=Base64.encode(bos.toByteArray());
+        bos.close();
+        byte[] text=base64.getBytes();
+        byte[] k=contraseña.getBytes();
+        byte[] m =new byte[(text.length)-53];
+        for(int i=54,j=0;i<text.length;i++,j++){
+            m[j]=text[i];
+        }
+       
+        KeySpec ks=new DESKeySpec(k);
+        SecretKeyFactory kf=SecretKeyFactory.getInstance("DES");
+        SecretKey ky=kf.generateSecret(ks);
+        Cipher ecb= Cipher.getInstance("DES/ECB/PKCS5Padding");
+        ecb.init(Cipher.ENCRYPT_MODE,ky);
+        byte [] cifra=ecb.doFinal(m);
+        
+        
+        Cipher decb = Cipher.getInstance("DES/ECB/NoPadding");
+        decb.init(Cipher.DECRYPT_MODE,ky);
+        byte [] descifra=decb.doFinal(cifra);
+        
+        byte [] imagen=new byte[cifra.length+54];
+        text=Base64.decode(base64);
+        for(int i=0,j=0;i<imagen.length;i++)
+            if(i<54)
+                imagen[i]=text[i];
+            else{
+                imagen[i]=descifra[j];
+                j++;
+            }
+        
+        BufferedImage imag=ImageIO.read(new ByteArrayInputStream(text));
+        ImageIO.write(imag,"bmp",new File("Prueba2.bmp"));
     }
-
     private static void cbc(BufferedImage img) {
         
     }
-
     private static void cfb(BufferedImage img) {
         
     }
-
     private static void ofb(BufferedImage img) {
         
     }
+
+    
 }
