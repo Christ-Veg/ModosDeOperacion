@@ -27,9 +27,10 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.imageio.ImageIO;
 
 public class ModosDeOperacion {
+    
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeyException, InvalidKeySpecException, InvalidKeySpecException, IllegalBlockSizeException, IllegalBlockSizeException, BadPaddingException, Base64DecodingException {
-        String thunder="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\thundercats.bmp", 
-            paisaje="C:\\Users\\Christian\\Desktop\\Chris\\ESCOM\\Cryptography\\paisaje.bmp";
+        String thunder="C:\\Users\\J. PEREZ\\Desktop\\thundercats.bmp", 
+            paisaje="C:\\Users\\J. PEREZ\\Desktop\\paisaje.bmp";
         
         BufferedImage img=ImageIO.read(new File(thunder));
         ecb(img);//Metodo que nos lleva a el modo de operacion respectivo
@@ -37,8 +38,8 @@ public class ModosDeOperacion {
         //cbc(img);//Metodo que nos lleva a el modo de operacion respectivo
         //cfb(img);//Metodo que nos lleva a el modo de operacion respectivo
         //ofb(img);//Metodo que nos lleva a el modo de operacion respectivo
-        Ek obj=new Ek();
-        obj.cifrado();
+        //Ek obj=new Ek();
+        //obj.cifrado();
     }    
 
     private static void ecb(BufferedImage im) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, Base64DecodingException {

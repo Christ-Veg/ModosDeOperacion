@@ -5,9 +5,21 @@
  */
 package modosdeoperacion;
 
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -21,88 +33,122 @@ public class Inicio extends javax.swing.JFrame {
     /**
      * Creates new form Inicio
      */
-    
+    DES des = new DES();
+
     Boolean imagencargada = false; //Bandera para saber si ya se cargo una imagen
     String rutaimagen = "";//Ruta de la imagen
-    int cECB=0, cCBC=0, cCFB=0, cOFB=0;
-    int dECB=0, dCBC=0, dCFB=0, dOFB=0; 
-    
+    int cECB = 0, cCBC = 0, cCFB = 0, cOFB = 0;
+    int dECB = 0, dCBC = 0, dCFB = 0, dOFB = 0;
+
     public Inicio() {
         initComponents();
-        
+
         agregaListenerCheckBox();
         agregaListenerRadios();
     }
 
-    public void agregaListenerCheckBox(){
-        cbECB.addItemListener(new ItemListener() {    
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                   if(e.getStateChange()==1){
-                       System.out.println("ECB Seleccionado "); cECB=1;
-                   }else{
-                       System.out.println("ECB Deseleccionado");cECB=0;
-                   }}});
-        cbCBC.addItemListener(new ItemListener() {    
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                   if(e.getStateChange()==1){
-                       System.out.println("CBC Seleccionado "); cCBC=1;
-                   }else{
-                       System.out.println("CBC Deseleccionado");cCBC=0;
-                   }}});
-        cbCFB.addItemListener(new ItemListener() {    
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                   if(e.getStateChange()==1){
-                       System.out.println("CFB Seleccionado "); cCFB=1;
-                   }else{
-                       System.out.println("CFB Deseleccionado");cCFB=0;
-                   }}});
-        cbOFB.addItemListener(new ItemListener() {    
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                   if(e.getStateChange()==1){
-                       System.out.println("OFB Seleccionado "); cOFB=1;
-                   }else{
-                       System.out.println("OFB Deseleccionado");cOFB=0;
-                   }}});
+    public void agregaListenerCheckBox() {
+        cbECB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == 1) {
+                    System.out.println("ECB Seleccionado ");
+                    cECB = 1;
+                } else {
+                    System.out.println("ECB Deseleccionado");
+                    cECB = 0;
+                }
+            }
+        });
+        cbCBC.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == 1) {
+                    System.out.println("CBC Seleccionado ");
+                    cCBC = 1;
+                } else {
+                    System.out.println("CBC Deseleccionado");
+                    cCBC = 0;
+                }
+            }
+        });
+        cbCFB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == 1) {
+                    System.out.println("CFB Seleccionado ");
+                    cCFB = 1;
+                } else {
+                    System.out.println("CFB Deseleccionado");
+                    cCFB = 0;
+                }
+            }
+        });
+        cbOFB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == 1) {
+                    System.out.println("OFB Seleccionado ");
+                    cOFB = 1;
+                } else {
+                    System.out.println("OFB Deseleccionado");
+                    cOFB = 0;
+                }
+            }
+        });
     }
-    
-    public void agregaListenerRadios(){
-        rbECB.addItemListener(new ItemListener() {    
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                   if(e.getStateChange()==1){
-                       System.out.println("ECB Seleccionado "); dECB=1;
-                   }else{
-                       System.out.println("ECB Deseleccionado");dECB=0;
-                   }}});
-        rbCBC.addItemListener(new ItemListener() {    
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                   if(e.getStateChange()==1){
-                       System.out.println("CBC Seleccionado "); dCBC=1;
-                   }else{
-                       System.out.println("CBC Deseleccionado");dCBC=0;
-                   }}});
-        rbCFB.addItemListener(new ItemListener() {    
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                   if(e.getStateChange()==1){
-                       System.out.println("CFB Seleccionado "); dCFB=1;
-                   }else{
-                       System.out.println("CFB Deseleccionado");dCFB=0;
-                   }}});
-        rbOFB.addItemListener(new ItemListener() {    
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                   if(e.getStateChange()==1){
-                       System.out.println("OFB Seleccionado "); dOFB=1;
-                   }else{
-                       System.out.println("OFB Deseleccionado");dOFB=0;
-                   }}});
+
+    public void agregaListenerRadios() {
+        rbECB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == 1) {
+                    System.out.println("ECB Seleccionado ");
+                    dECB = 1;
+                } else {
+                    System.out.println("ECB Deseleccionado");
+                    dECB = 0;
+                }
+            }
+        });
+        rbCBC.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == 1) {
+                    System.out.println("CBC Seleccionado ");
+                    dCBC = 1;
+                } else {
+                    System.out.println("CBC Deseleccionado");
+                    dCBC = 0;
+                }
+            }
+        });
+        rbCFB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == 1) {
+                    System.out.println("CFB Seleccionado ");
+                    dCFB = 1;
+                } else {
+                    System.out.println("CFB Deseleccionado");
+                    dCFB = 0;
+                }
+            }
+        });
+        rbOFB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == 1) {
+                    System.out.println("OFB Seleccionado ");
+                    dOFB = 1;
+                } else {
+                    System.out.println("OFB Deseleccionado");
+                    dOFB = 0;
+                }
+            }
+        });
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -365,22 +411,22 @@ public class Inicio extends javax.swing.JFrame {
     private void CargarImagenBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CargarImagenBtnActionPerformed
         // TODO add your handling code here:
         FileNameExtensionFilter filtro = new FileNameExtensionFilter("Imagenes", "jpg");
-        
+
         JFileChooser f = new JFileChooser();
         f.setFileFilter(filtro);
         f.setMultiSelectionEnabled(false);
-        
-        int r = f.showOpenDialog(null);        
-        
-        if(r==JFileChooser.APPROVE_OPTION){        
-            
+
+        int r = f.showOpenDialog(null);
+
+        if (r == JFileChooser.APPROVE_OPTION) {
+
             rutaimagen = f.getSelectedFile().getPath();//Ruta de la imagen
-            
+
             String nombreimagen = f.getSelectedFile().getName();
             lblRuta.setText(nombreimagen);
-            
+
             imagencargada = true;
-        }else{
+        } else {
             imagencargada = false;
         }
     }//GEN-LAST:event_CargarImagenBtnActionPerformed
@@ -402,23 +448,38 @@ public class Inicio extends javax.swing.JFrame {
                     "La contrasena debe tener longitud de 8", "INFO",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {
+            try {
+                if (cECB == 1) //CIFRADO DES/ ECB
+                    des.cifrar(rutaimagen, contrasenia, 0);
+                if (cCBC == 1) //CIFRADO DES/ CBC
+                    des.cifrar(rutaimagen, contrasenia, 1);
+                if (cCFB == 1) //CIFRADO DES/ CFB
+                    des.cifrar(rutaimagen, contrasenia, 2);
+                if (cOFB == 1) //CIFRADO DES/ OFB
+                    des.cifrar(rutaimagen, contrasenia, 3);
 
-            if(cECB==1){
-                //CIFRADO DES/ ECB
+                JOptionPane.showMessageDialog(null,
+                        "La imagen se cifro correctamente.", "EXITO",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (IOException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchPaddingException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidKeyException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidKeySpecException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalBlockSizeException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BadPaddingException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Base64DecodingException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-            if(cCBC==1){
-                //CIFRADO DES/ CBC
-            }
-            
-            if(cCFB==1){
-                //CIFRADO DES/ CFB
-            }
-            
-            if(cOFB==1){
-                //CIFRADO DES/OFB
-            }
-            
+
         }
     }//GEN-LAST:event_CifrarBtnActionPerformed
 
@@ -440,25 +501,40 @@ public class Inicio extends javax.swing.JFrame {
                     "La contrasena debe tener longitud de 8", "INFO",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {
+            try {
+                if (dECB == 1)//DESCIFRADO DES/ ECB
+                    des.descifrar(rutaimagen, contrasenia, 0);
+                if (dCBC == 1) //DESCIFRADO DES/ CBC
+                    des.descifrar(rutaimagen, contrasenia, 1);
+                if (dCFB == 1) //DESCIFRADO DES/ CFB
+                     des.descifrar(rutaimagen, contrasenia, 2);
+                if (dOFB == 1)//DESCIFRADO DES/OFB
+                     des.descifrar(rutaimagen, contrasenia, 3);
+                
+                JOptionPane.showMessageDialog(null,
+                    "La imagen se descifro correctamente.", "EXITO",
+                    JOptionPane.INFORMATION_MESSAGE);
 
-            if(dECB==1){
-                //DESCIFRADO DES/ ECB
+            } catch (IOException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidKeyException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidKeySpecException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchPaddingException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalBlockSizeException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Base64DecodingException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BadPaddingException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-            if(dCBC==1){
-                //DESCIFRADO DES/ CBC
-            }
-            
-            if(dCFB==1){
-                //DESCIFRADO DES/ CFB
-            }
-            
-            if(dOFB==1){
-                //DESCIFRADO DES/OFB
-            }
-            
+
         }
-        
+
     }//GEN-LAST:event_DescifrarBtnActionPerformed
 
     /**
