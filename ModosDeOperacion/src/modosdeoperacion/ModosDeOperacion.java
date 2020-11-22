@@ -29,8 +29,8 @@ import javax.imageio.ImageIO;
 public class ModosDeOperacion {
     
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeyException, InvalidKeySpecException, InvalidKeySpecException, IllegalBlockSizeException, IllegalBlockSizeException, BadPaddingException, Base64DecodingException {
-        String thunder="C:\\Users\\J. PEREZ\\Desktop\\thundercats.bmp", 
-            paisaje="C:\\Users\\J. PEREZ\\Desktop\\paisaje.bmp";
+        String thunder="C:\\Users\\J. PEREZ\\Desktop\\Practica 3\\thundercats.bmp", 
+            paisaje="C:\\Users\\J. PEREZ\\Desktop\\Practica 3\\paisaje.bmp";
         
         BufferedImage img=ImageIO.read(new File(thunder));
         ecb(img);//Metodo que nos lleva a el modo de operacion respectivo
@@ -96,6 +96,7 @@ public class ModosDeOperacion {
         KeySpec ks=new DESKeySpec(k);
         SecretKeyFactory kf=SecretKeyFactory.getInstance("DES");
         SecretKey ky=kf.generateSecret(ks);
+        
         Cipher ecb= Cipher.getInstance("DES/ECB/PKCS5Padding");
         ecb.init(Cipher.ENCRYPT_MODE,ky);
         byte [] cifra=ecb.doFinal(m);

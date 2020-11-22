@@ -12,10 +12,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Arrays;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -23,71 +27,83 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.imageio.ImageIO;
+import sun.misc.BASE64Decoder;
 
 /**
  *
  * @author J.PEREZ
  */
 public class DES {
+    
+    IvParameterSpec iv = new IvParameterSpec("12345678".getBytes());
+    AlgorithmParameterSpec paramSpec = iv;
 
     //Recibe la ruta de la imagen, la contrasenia, y el modo de operacion.
-    public void cifrar(String rutaimagen, String contrasenia, int MO) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, Base64DecodingException {
+    public byte[] cifrar(String rutaimagen, String contrasenia, int MO) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidKeySpecException, IllegalBlockSizeException, BadPaddingException, Base64DecodingException, InvalidAlgorithmParameterException {
         
-        BufferedImage  im=ImageIO.read(new File(rutaimagen));
+        BufferedImage im =ImageIO.read(new File(rutaimagen));
         
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.write(im, "bmp", bos);
         bos.flush();
-        String base64 = Base64.encode(bos.toByteArray());
+            byte[] plano = bos.toByteArray();//img Cifrada
         bos.close();
-        byte[] text = base64.getBytes();
-        byte[] k = contrasenia.getBytes();
-        byte[] m = new byte[(text.length) - 53];
-        for (int i = 54, j = 0; i < text.length; i++, j++) {
-            m[j] = text[i];
-        }
+        
+        byte[] k = contrasenia.getBytes();//LLave
 
-        KeySpec ks = new DESKeySpec(k);
+        byte[] cabecera = Arrays.copyOfRange(plano, 0, 54);
+        byte[] paraCifrar = Arrays.copyOfRange(plano, 54, plano.length);     
+        
+        DESKeySpec ks = new DESKeySpec(k);
         SecretKeyFactory kf = SecretKeyFactory.getInstance("DES");
-        SecretKey ky = kf.generateSecret(ks);
+        Key ky = kf.generateSecret(ks);
         
         Cipher mo;
         switch(MO){
             case 0:
                 mo = Cipher.getInstance("DES/ECB/PKCS5Padding");
+                mo.init(Cipher.ENCRYPT_MODE, ky);
                 break;
             case 1:
                 mo = Cipher.getInstance("DES/CBC/PKCS5Padding");
+                mo.init(Cipher.ENCRYPT_MODE, ky, paramSpec);
                 break;
             case 2:
                 mo = Cipher.getInstance("DES/CFB/PKCS5Padding");
+                mo.init(Cipher.ENCRYPT_MODE, ky, paramSpec);
                 break;
             default:
                 mo = Cipher.getInstance("DES/OFB/PKCS5Padding");
+                mo.init(Cipher.ENCRYPT_MODE, ky, paramSpec);
                 break;
         }
         
-        mo.init(Cipher.ENCRYPT_MODE, ky);
-        byte[] cifra = mo.doFinal(m);
+        
+        byte[] cifra = mo.doFinal(paraCifrar);
+        
+        System.out.println("Tamanio cifra: "+cifra.length);
+        
+        byte[] imagen = new byte[cabecera.length+cifra.length];//54 del encabezado
+        
+        System.arraycopy( cabecera, 0, imagen, 0, cabecera.length );
+        System.arraycopy( cifra, 0, imagen, cabecera.length, cifra.length );
+        
+        System.out.println("Largo imagen cifrada[bytes]: "+imagen.length);
 
-        byte[] imagen = new byte[cifra.length + 54];
-        text = Base64.decode(base64);
-        for (int i = 0, j = 0; i < imagen.length; i++) {
-            if (i < 54) {
-                imagen[i] = text[i];
-            } else {
-                imagen[i] = cifra[j];
-                j++;
-            }
-        }
-        System.out.println(text.length + "    " + cifra.length);
-
-        BufferedImage imag = ImageIO.read(new ByteArrayInputStream(imagen));
+        
+        
+        ByteArrayInputStream img = new ByteArrayInputStream(imagen);
+        BufferedImage Img = ImageIO.read(img);
+        
+        
+    
         
         int indice = rutaimagen.lastIndexOf(".");
         StringBuffer rutanueva = new StringBuffer(rutaimagen);
         
+
         switch(MO){
             case 0:
                 rutanueva.insert(indice, "_ECB");
@@ -103,62 +119,66 @@ public class DES {
                 break;
         }
         String r = rutanueva.toString();
-        System.out.println("Imagen cifrada: "+rutanueva.toString());
-        ImageIO.write(imag, "bmp", new File(r));
+        //System.out.println("Ruta Imagen cifrada: "+rutanueva.toString());
         
+        ImageIO.write(Img, "bmp", new File(r));
+        return cifra;
     }
 
-    public void descifrar(String rutaimagen, String contrasenia, int MO) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, Base64DecodingException, BadPaddingException, BadPaddingException, BadPaddingException {
+    public void descifrar(String rutaimagen, String contrasenia, int MO) throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, Base64DecodingException, BadPaddingException, BadPaddingException, BadPaddingException, InvalidAlgorithmParameterException {
         
-        BufferedImage  im=ImageIO.read(new File(rutaimagen));
-        
+        BufferedImage  im = ImageIO.read(new File(rutaimagen));   
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ImageIO.write(im, "bmp", bos);
+        
+        ImageIO.write(im,"bmp", bos);//Leer imagen cifrada
         bos.flush();
-        String base64 = Base64.encode(bos.toByteArray());
+            byte[] cifra=bos.toByteArray();//Transformar a arreglo de bytes
         bos.close();
+                
+        System.out.println("Largo imagen cifrada[bytes]: "+cifra.length);
         
-        byte[] text = base64.getBytes();
-        byte[] k = contrasenia.getBytes();
-        byte[] cifra = new byte[(text.length) - 53];
-        for (int i = 54, j = 0; i < text.length; i++, j++) {
-            cifra[j] = text[i];
-        }
+        byte[] k=contrasenia.getBytes();
+        
+        
+        byte[] cabecera = Arrays.copyOfRange(cifra, 0, 54);
+        byte[] paraDescifrar = Arrays.copyOfRange(cifra, 54, cifra.length);
+        
+       
+        KeySpec ks=new DESKeySpec(k);
+        SecretKeyFactory kf=SecretKeyFactory.getInstance("DES");
+        SecretKey ky=kf.generateSecret(ks);
 
-        KeySpec ks = new DESKeySpec(k);
-        SecretKeyFactory kf = SecretKeyFactory.getInstance("DES");
-        SecretKey ky = kf.generateSecret(ks);   
-        
         Cipher decb;
         switch(MO){
             case 0:
                 decb = Cipher.getInstance("DES/ECB/NoPadding");
+                decb.init(Cipher.DECRYPT_MODE,ky);
+                
                 break;
             case 1:
                 decb = Cipher.getInstance("DES/CBC/NoPadding");
+                decb.init(Cipher.DECRYPT_MODE,ky, paramSpec);
                 break;
             case 2:
                 decb = Cipher.getInstance("DES/CFB/NoPadding");
+                decb.init(Cipher.DECRYPT_MODE,ky, paramSpec);
                 break;
             default:
                 decb = Cipher.getInstance("DES/OFB/NoPadding");
+                decb.init(Cipher.DECRYPT_MODE,ky, paramSpec);
                 break;
         }
-                
-        decb.init(Cipher.DECRYPT_MODE, ky);
-        byte[] descifra = decb.doFinal(cifra);
+        
+        byte [] plano = decb.doFinal(paraDescifrar); 
+        
+        byte [] imagen=new byte[cabecera.length+plano.length];
+        
 
-        byte[] imagen = new byte[cifra.length + 54];
-        text = Base64.decode(base64);
-        for (int i = 0, j = 0; i < imagen.length; i++) {
-            if (i < 54) {
-                imagen[i] = text[i];
-            } else {
-                imagen[i] = descifra[j];
-                j++;
-            }
-        }
-
+        System.arraycopy( cabecera, 0, imagen, 0, cabecera.length );
+        System.arraycopy( plano, 0, imagen, cabecera.length, plano.length );
+        
+        
+        System.out.println("Largo imagen descifrada: "+imagen.length);
         
         int indice = rutaimagen.lastIndexOf(".");
         StringBuffer rutanueva = new StringBuffer(rutaimagen);        
@@ -177,10 +197,19 @@ public class DES {
                 break;
         }
         String r = rutanueva.toString();
-        System.out.println("Imagen descifrada: "+rutanueva.toString());
         
-        BufferedImage imag = ImageIO.read(new ByteArrayInputStream(text));
-        ImageIO.write(imag, "bmp", new File(r));
+        System.out.println("Ruta Imagen descifrada: "+rutanueva.toString());
+        
+        
+        
+        
+        ByteArrayInputStream bis = new ByteArrayInputStream(imagen);
+        BufferedImage bImage2 = ImageIO.read(bis);
+        
+        ImageIO.write(bImage2, "bmp", new File(r) );
+        bImage2.flush();
+        System.out.println("Imagen descifrada creada");
+        
     }
 
 }

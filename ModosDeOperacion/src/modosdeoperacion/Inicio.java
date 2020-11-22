@@ -11,6 +11,7 @@ import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -34,6 +35,9 @@ public class Inicio extends javax.swing.JFrame {
      * Creates new form Inicio
      */
     DES des = new DES();
+    
+    //byte[] c0, c1, c2, c3;
+    
 
     Boolean imagencargada = false; //Bandera para saber si ya se cargo una imagen
     String rutaimagen = "";//Ruta de la imagen
@@ -478,6 +482,8 @@ public class Inicio extends javax.swing.JFrame {
                 Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Base64DecodingException ex) {
                 Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidAlgorithmParameterException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }
@@ -530,6 +536,8 @@ public class Inicio extends javax.swing.JFrame {
             } catch (Base64DecodingException ex) {
                 Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
             } catch (BadPaddingException ex) {
+                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidAlgorithmParameterException ex) {
                 Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
             }
 
